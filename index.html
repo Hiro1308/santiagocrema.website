@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SANITAGO CREMA</title>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!window.location.hash) {
+                document.body.insertAdjacentHTML(
+                    "afterbegin",
+                    `<div id="start-overlay">
+                        <button type="button">Estás listo?</button>
+                        <span class="hidden">*Pon tu teléfono en horizontal</span>
+                        <audio src="audio/ps2_startup.mp3"></audio>
+                    </div>`
+                );
+                const overlay = document.getElementById("start-overlay");
+                const button = overlay.querySelector("button");
+                const span = overlay.querySelector("span");
+                const audio = overlay.querySelector("audio");
+
+                const cover = document.getElementById("cover");
+
+                function calculateCartesian(distance, angle) {
+                    const initialX = (window.screen.width - cover.clientWidth) / 2;
+                    const initialY = window.screen.height * 0.025;
+                    
+                    let angleRad = angle * (Math.PI / 180);
+                    let x = initialX + distance * Math.sin(angleRad);
+                    let y = initialY - distance * Math.cos(angleRad);
+
+                    return [x, y]
+                }
+
+                function generateImages() {
+                    let images = []
+                    let imageCount = 48;
+                    let i = 0;
+                    while (i < imageCount) {
+                        distance = window.screen.width * 3
+                        angle = (360 / imageCount) * i;
+                        const [top, left] = calculateCartesian(distance, angle);
+
+                        const img = document.createElement('img');
+                        img.src = 'img/cover.jpg';
+                        img.className = 'offscreen-image';
+                        img.style.top = top + "px";
+                        img.style.left = left + "px";
+                        images.push(img)
+                        overlay.insertAdjacentElement("afterbegin", img);
+
+                        i++;
+                    }
+
+                    return images
+                }
+
+                button.addEventListener("click", () => {
+                    button.classList.add('hidden')
+                    audio.play();
+                    setTimeout(() => {
+                        overlay.classList.add('hidden');
+                    }, 16500);
+
+                    setTimeout(() => {
+                        overlay.remove();
+                    }, 17000);
+
+                    let images = generateImages()
+                    let delay = 2500
+                    let zindez = 9999
+                    while (images.length > 0) {
+                        index = Math.floor(Math.random() * images.length)
+                        const image = images.splice(index, 1)[0]
+                        const currentDelay = delay
+                        setTimeout((image) => {
+                            image.style.left = (window.screen.width - cover.clientWidth) / 2 + 'px';
+                            image.style.top = window.screen.height * 0.05 + 'px';
+                            image.style.zIndex = currentDelay;
+                        }, delay, image);
+                        delay += 150
+                    }
+
+
+                    // !!! check later
+                    window.scrollTo(0, cover.offsetTop - ((window.innerHeight - cover.clientHeight)/2)) 
+                });
+                
+                function checkOrientation() {
+                    if (window.innerWidth <= window.innerHeight) {
+                        button.disabled = true;
+                        span.classList.remove('hidden')
+                    } else {
+                        button.disabled = false;
+                        span.classList.add('hidden')
+                    }
+                }
+                checkOrientation();
+
+                window.addEventListener("resize", checkOrientation);
+                window.addEventListener("orientationchange", checkOrientation);
+
+                menu_button(document.getElementById("btn_inicio"));
+            } else {
+                const hash = window.location.hash;
+                if (hash === "#inicio") {
+                    menu_button(document.getElementById("btn_inicio"));
+                } else if (hash === "#pelicula") {
+                    menu_button(document.getElementById("btn_pelicula"));
+                } else if (hash === "#manual") {
+                    menu_button(document.getElementById("btn_manual"));
+                } else if (hash === "#soundtrack") {
+                    menu_button(document.getElementById("btn_soundtrack"));
+                }
+            }
+        });
+
+        function menu_button(button) {
+            btn_inicio = document.getElementById("btn_inicio");
+            btn_pelicula = document.getElementById("btn_pelicula");
+            btn_manual = document.getElementById("btn_manual");
+            btn_soundtrack = document.getElementById("btn_soundtrack");
+
+            btn_inicio.classList.remove('selected');
+            btn_pelicula.classList.remove('selected');
+            btn_manual.classList.remove('selected');
+            btn_soundtrack.classList.remove('selected');
+
+            container_inicio = document.getElementById("container_inicio");
+            container_pelicula = document.getElementById("container_pelicula");
+            container_manual = document.getElementById("container_manual");
+            container_soundtrack = document.getElementById("container_soundtrack");
+
+            container_inicio.classList.add('display-none');
+            container_pelicula.classList.add('display-none');
+            container_manual.classList.add('display-none');
+            container_soundtrack.classList.add('display-none');
+            if (button == btn_inicio) {
+                btn_inicio.classList.add('selected');
+                container_inicio.classList.remove('display-none');
+            } else if (button == btn_pelicula) {
+                btn_pelicula.classList.add('selected');
+                container_pelicula.classList.remove('display-none');
+            } else if (button == btn_manual) {
+                btn_manual.classList.add('selected');
+                container_manual.classList.remove('display-none');
+            } else if (button == btn_soundtrack) {
+                btn_soundtrack.classList.add('selected');
+                container_soundtrack.classList.remove('display-none');
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <image src="img/banner.png" id="banner"></image>
+        <div class="navbar">
+            <ul>
+                <li><a id="btn_inicio" href="#inicio" onclick="menu_button(this)">Inicio</a></li>
+                <li><a id="btn_pelicula" href="#pelicula" onclick="menu_button(this)">Película</a></li>
+                <li><a id="btn_manual" href="#manual" onclick="menu_button(this)">Manual</a></li>
+                <li><a id="btn_soundtrack" href="#soundtrack" onclick="menu_button(this)">Soundtrack</a></li>
+            </ul>
+        </div>
+        <br>
+        <div id="container_inicio" class="display-none">
+            <img src="img/cover.jpg" id="cover"></img>
+        </div>
+        <div id="container_pelicula" class="display-none pelicula-container">
+<video width="640" controls>
+  <source src="peli.mp4" type="video/mp4">
+</video></div>
+
+        <div id="container_manual" class="display-none" style="text-align:center; margin-top:40px;">
+  <a href="manual.pdf" download>
+    <img
+      src="img/download.png"
+      alt="Descargar Manual"
+      style="width:500px;"
+    >
+  </a>
+</div>
+
+        <div id="container_soundtrack" class="display-none">
+            <div id="iphone">
+  <div id="screen">
+    <div id="song-title">—</div>
+    <div id="song-sub">—</div>
+
+    <div id="progress-wrap">
+      <span id="tcur">0:00</span>
+      <div id="progress-bar"><div id="progress"></div></div>
+      <span id="tdur">0:00</span>
+    </div>
+
+    <div id="controls">
+      <button id="btnPrev" type="button">⏮</button>
+      <button id="btnPlay" type="button">▶</button>
+      <button id="btnNext" type="button">⏭</button>
+    </div>
+
+    <div id="playlist"></div>
+  </div>
+</div>
+
+<audio id="audio"></audio>
+
+</div>
+
+        </div>
+    </div>
+    <script>
+  var copitos = 30;
+  var flakes = [];
+
+  for (var i = 0; i < copitos; i++) {
+    var span = document.createElement("span");
+    span.innerHTML = "*";
+    span.className = "snowflake";
+    span.style.left = Math.random() * window.innerWidth + "px";
+    span.style.fontSize = (10 + Math.random() * 10) + "px";
+    span.speed = 1 + Math.random() * 3;
+    span.y = Math.random() * window.innerHeight;
+    document.body.appendChild(span);
+    flakes.push(span);
+  }
+
+  function nieve() {
+    for (var i = 0; i < flakes.length; i++) {
+      flakes[i].y += flakes[i].speed;
+      if (flakes[i].y > window.innerHeight) {
+        flakes[i].y = -10;
+        flakes[i].style.left = Math.random() * window.innerWidth + "px";
+      }
+      flakes[i].style.top = flakes[i].y + "px";
+    }
+  }
+
+  setInterval(nieve, 50);
+</script>
+
+<script src="audio/music/playlist.js"></script>
+
+<script>
+
+  let current = 0;
+
+  const audio = document.getElementById("audio");
+  const titleEl = document.getElementById("song-title");
+  const subEl = document.getElementById("song-sub");
+  const progressEl = document.getElementById("progress");
+  const tcur = document.getElementById("tcur");
+  const tdur = document.getElementById("tdur");
+  const btnPlay = document.getElementById("btnPlay");
+  const btnPrev = document.getElementById("btnPrev");
+  const btnNext = document.getElementById("btnNext");
+  const pl = document.getElementById("playlist");
+
+  function fmt(sec) {
+    if (!isFinite(sec) || sec < 0) return "0:00";
+    sec = Math.floor(sec);
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return m + ":" + (s < 10 ? "0" : "") + s;
+  }
+
+  function renderPlaylist() {
+    pl.innerHTML = "";
+    for (let i = 0; i < playlist.length; i++) {
+      const div = document.createElement("div");
+      div.className = "pl-item" + (i === current ? " active" : "");
+      div.textContent = playlist[i].title + " — " + playlist[i].sub;
+      div.onclick = () => { loadSong(i, true); };
+      pl.appendChild(div);
+    }
+  }
+
+  function setPlayIcon() {
+    btnPlay.textContent = audio.paused ? "▶" : "❚❚";
+  }
+
+  function loadSong(index, autoplay) {
+    current = index;
+    const item = playlist[current];
+    audio.src = item.file;
+    titleEl.textContent = item.title;
+    subEl.textContent = item.sub;
+    progressEl.style.width = "0%";
+    tcur.textContent = "0:00";
+    tdur.textContent = "0:00";
+    renderPlaylist();
+    if (autoplay) audio.play();
+    setPlayIcon();
+  }
+
+  function next() {
+    loadSong((current + 1) % playlist.length, true);
+  }
+
+  function prev() {
+    loadSong((current - 1 + playlist.length) % playlist.length, true);
+  }
+
+  function playPause() {
+    if (audio.paused) audio.play();
+    else audio.pause();
+    setPlayIcon();
+  }
+
+  btnNext.onclick = next;
+  btnPrev.onclick = prev;
+  btnPlay.onclick = playPause;
+
+  audio.addEventListener("loadedmetadata", () => {
+    tdur.textContent = fmt(audio.duration);
+  });
+
+  audio.addEventListener("timeupdate", () => {
+    const p = (audio.currentTime / audio.duration) * 100;
+    progressEl.style.width = (isFinite(p) ? p : 0) + "%";
+    tcur.textContent = fmt(audio.currentTime);
+  });
+
+  audio.addEventListener("play", setPlayIcon);
+  audio.addEventListener("pause", setPlayIcon);
+  audio.addEventListener("ended", next);
+
+  // init
+  loadSong(0, false);
+</script>
+
+
+</body>
+</html>
